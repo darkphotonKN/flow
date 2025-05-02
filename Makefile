@@ -13,6 +13,9 @@ build:
 run: build
 	@./bin/app
 
+dev: 
+	@air
+
 # Run tests with verbose output and coverage
 test:
 	@go test -v ./... -cover
@@ -22,27 +25,35 @@ test-preview:
 	@go test ./filename/ -coverprofile=coverage.out 
 	@go tool cover -html=coverage.out
 
-# Migration commands using Goose
+# Migration commands using golang-migrate
 migrate-up:
-	@goose -dir ./migrations postgres "$(DB_STRING)" up
+	@migrate -path ./migrations -database "$(DB_STRING)" up
 
 migrate-down:
-	@goose -dir ./migrations postgres "$(DB_STRING)" down
+	@migrate -path ./migrations -database "$(DB_STRING)" down
 
 migrate-status:
-	@goose -dir ./migrations postgres "$(DB_STRING)" status
+	@migrate -path ./migrations -database "$(DB_STRING)" version
 
 migrate-down-to:
 	@if [ -z "$(VERSION)" ]; then \
 		echo "Usage: make migrate-down-to VERSION=<version>"; \
 		exit 1; \
 	fi; \
-	goose -dir ./migrations postgres "$(DB_STRING)" down-to $(VERSION)
+	migrate -path ./migrations -database "$(DB_STRING)" down $(VERSION)
 
 migrate-reset:
-	@goose -dir ./migrations postgres "$(DB_STRING)" reset
+	@migrate -path ./migrations -database "$(DB_STRING)" down
+	@migrate -path ./migrations -database "$(DB_STRING)" up
 
-.PHONY: run test migrate-up migrate-down migrate-status
+migrate-create:
+	@if [ -z "$(NAME)" ]; then \
+		echo "Usage: make migrate-create NAME=<migration_name>"; \
+		exit 1; \
+	fi; \
+	migrate create -ext sql -dir ./migrations -seq $(NAME)
+
+.PHONY: run test migrate-up migrate-down migrate-status migrate-down-to migrate-reset migrate-create
 
 
 

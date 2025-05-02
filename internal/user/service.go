@@ -11,22 +11,28 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserService struct {
-	Repo *UserRepository
+type service struct {
+	Repo Repository
 }
 
-func NewUserService(repo *UserRepository) *UserService {
-	return &UserService{
+type Repository interface {
+	Create(user models.User) error
+	GetById(id uuid.UUID) (*models.User, error)
+	GetAll() ([]*Response, error)
+	GetUserByEmail(email string) (*models.User, error)
+}
+
+func NewService(repo Repository) Service {
+	return &service{
 		Repo: repo,
 	}
 }
 
-func (s *UserService) GetUserByIdService(id uuid.UUID) (*models.User, error) {
+func (s *service) GetById(id uuid.UUID) (*models.User, error) {
 	return s.Repo.GetById(id)
 }
 
-func (s *UserService) CreateUserService(user models.User) error {
-
+func (s *service) Create(user models.User) error {
 	hashedPw, err := s.HashPassword(user.Password)
 
 	if err != nil {
@@ -40,7 +46,7 @@ func (s *UserService) CreateUserService(user models.User) error {
 }
 
 // HashPassword hashes the given password using bcrypt.
-func (s *UserService) HashPassword(password string) (string, error) {
+func (s *service) HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -48,11 +54,11 @@ func (s *UserService) HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-func (s *UserService) GetAllUsersService() ([]*UserResponse, error) {
+func (s *service) GetAll() ([]*Response, error) {
 	return s.Repo.GetAll()
 }
 
-func (s *UserService) LoginUserService(loginReq UserLoginRequest) (*UserLoginResponse, error) {
+func (s *service) Login(loginReq LoginRequest) (*LoginResponse, error) {
 	user, err := s.Repo.GetUserByEmail(loginReq.Email)
 
 	if err != nil {
@@ -72,7 +78,7 @@ func (s *UserService) LoginUserService(loginReq UserLoginRequest) (*UserLoginRes
 
 	user.Password = ""
 
-	res := &UserLoginResponse{
+	res := &LoginResponse{
 		AccessToken:      accessToken,
 		AccessExpiresIn:  int(accessExpiryTime),
 		RefreshToken:     refreshToken,

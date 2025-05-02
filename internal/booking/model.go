@@ -2,8 +2,8 @@ package booking
 
 import "time"
 
-type CreateBookingRequest struct {
-	Status    string    `json:"status"`
+type CreateRequest struct {
 	StartDate time.Time `json:"startDate"`
 	EndDate   time.Time `json:"endDate"`
+	Status    string    `json:"status"`
 }

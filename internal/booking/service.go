@@ -5,20 +5,24 @@ import (
 	"github.com/google/uuid"
 )
 
-type BookingService struct {
-	Repo *BookingRepository
+type Service struct {
+	Repo *Repository
 }
 
-func NewBookingService(repo *BookingRepository) *BookingService {
-	return &BookingService{
+func NewService(repo *Repository) *Service {
+	return &Service{
 		Repo: repo,
 	}
 }
 
-func (s *BookingService) GetBookingByIdService(userId uuid.UUID, id uuid.UUID) (*models.Booking, error) {
+func (s *Service) GetById(userId uuid.UUID, id uuid.UUID) (*models.Booking, error) {
 	return s.Repo.GetById(userId, id)
 }
 
-func (s *BookingService) CreateBookingService(userId uuid.UUID, req CreateBookingRequest) error {
+func (s *Service) Create(userId uuid.UUID, req CreateRequest) error {
+	return s.Repo.Create(userId, req)
+}
+
+func (s *Service) CreateTwo(userId uuid.UUID, req CreateRequest) error {
 	return s.Repo.Create(userId, req)
 }

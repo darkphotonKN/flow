@@ -9,17 +9,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserRepository struct {
+type repository struct {
 	DB *sqlx.DB
 }
 
-func NewUserRepository(db *sqlx.DB) *UserRepository {
-	return &UserRepository{
+func NewRepository(db *sqlx.DB) Repository {
+	return &repository{
 		DB: db,
 	}
 }
 
-func (r *UserRepository) Create(user models.User) error {
+func (r *repository) Create(user models.User) error {
 	query := `INSERT INTO users (name, email, password) VALUES (:name, :email, :password)`
 
 	_, err := r.DB.NamedExec(query, user)
@@ -31,7 +31,7 @@ func (r *UserRepository) Create(user models.User) error {
 	return nil
 }
 
-func (r *UserRepository) GetById(id uuid.UUID) (*models.User, error) {
+func (r *repository) GetById(id uuid.UUID) (*models.User, error) {
 	query := `SELECT * FROM users WHERE users.id = $1`
 
 	var user models.User
@@ -48,7 +48,7 @@ func (r *UserRepository) GetById(id uuid.UUID) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetAll() ([]*UserResponse, error) {
+func (r *repository) GetAll() ([]*Response, error) {
 	query := `
 	SELECT 
 		users.id,
@@ -86,7 +86,7 @@ func (r *UserRepository) GetAll() ([]*UserResponse, error) {
 	fmt.Printf("Results: %+v\n", results)
 
 	// map to hold each user
-	usersMap := make(map[uuid.UUID]*UserResponse)
+	usersMap := make(map[uuid.UUID]*Response)
 
 	// loop and inject all the related bookings
 	for _, row := range results {
@@ -95,7 +95,7 @@ func (r *UserRepository) GetAll() ([]*UserResponse, error) {
 		// check if user exists
 		if !exists {
 			// create index with user
-			user = &UserResponse{
+			user = &Response{
 				BaseDBDateModel: models.BaseDBDateModel{
 					ID:        row.ID,
 					CreatedAt: row.CreatedAt,
@@ -129,7 +129,7 @@ func (r *UserRepository) GetAll() ([]*UserResponse, error) {
 	fmt.Println("usersMap:", usersMap)
 
 	// convert back to array
-	usersResponse := make([]*UserResponse, 0, len(usersMap))
+	usersResponse := make([]*Response, 0, len(usersMap))
 	for _, user := range usersMap {
 		usersResponse = append(usersResponse, user)
 	}
@@ -139,7 +139,7 @@ func (r *UserRepository) GetAll() ([]*UserResponse, error) {
 	return usersResponse, nil
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
+func (r *repository) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
 	query := `SELECT * FROM users WHERE users.email = $1`
 

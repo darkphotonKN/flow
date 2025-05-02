@@ -12,12 +12,6 @@ type ApiData struct {
 	Result     []string
 }
 
-func example() {
-	service := NewService()
-
-	fileService := NewFileService("asdasd", service)
-}
-
 // SERVICE
 
 type Service struct {

@@ -8,35 +8,36 @@ import (
 	"github.com/google/uuid"
 )
 
-type BookingHandler struct {
-	Service *BookingService
+type Handler struct {
+	Service *Service
 }
 
-func NewBookingHandler(service *BookingService) *BookingHandler {
-	return &BookingHandler{
+func NewHandler(service *Service) *Handler {
+	return &Handler{
 		Service: service,
 	}
 }
 
-func (h *BookingHandler) CreateBookingHandler(c *gin.Context) {
+func (h *Handler) Create(c *gin.Context) {
+	// get user id from param
 	userIdParam := c.Param("user_id")
 
-	// parse and check userId is a valid uuid
+	// check that its a valid uuid
 	userId, err := uuid.Parse(userIdParam)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error with id %d, not a valid uuid.", userId)})
+		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error with user id %d, not a valid uuid.", userId)})
 		return
 	}
 
-	var booking CreateBookingRequest
+	var booking CreateRequest
 
 	if err := c.ShouldBindJSON(&booking); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error with parsing payload as JSON.")})
 		return
 	}
 
-	err = h.Service.CreateBookingService(userId, booking)
+	err = h.Service.Create(userId, booking)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"statusCode:": http.StatusInternalServerError, "message": fmt.Sprintf("Error when attempting to create booking: %s", err.Error())})
@@ -46,34 +47,35 @@ func (h *BookingHandler) CreateBookingHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"statusCode:": http.StatusCreated, "message": "Successfully created booking."})
 }
 
-func (h *BookingHandler) GetBookingByIdHandler(c *gin.Context) {
+func (h *Handler) GetById(c *gin.Context) {
+	// get user id from param
+	userIdParam := c.Param("user_id")
+
+	// check that its a valid uuid
+	userId, err := uuid.Parse(userIdParam)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error with user id %d, not a valid uuid.", userId)})
+		return
+	}
+
 	// get id from param
 	idParam := c.Param("id")
 
 	// check that its a valid uuid
 	id, err := uuid.Parse(idParam)
 
-	// get user_id from query param
-	userIdQuery := c.Query("user_id")
-
-	userId, userIdErr := uuid.Parse(userIdQuery)
-
-	if err != nil || userIdErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error with ids pass in: \n%d\n%d, are not a valid uuids.", id, userId)})
-		// return to stop flow of function after error response
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error with id %d, not a valid uuid.", id)})
 		return
 	}
 
-	booking, err := h.Service.GetBookingByIdService(userId, id)
+	booking, err := h.Service.GetById(userId, id)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error when attempting to get user with id %d %s", id, err.Error())})
-
+		c.JSON(http.StatusBadRequest, gin.H{"statusCode:": http.StatusBadRequest, "message": fmt.Sprintf("Error when attempting to get booking with id %d %s", id, err.Error())})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"statusCode:": http.StatusOK, "message": "Successfully retrived booking.",
-		// de-reference to return the user struct, not pointer
-		"result": *booking})
-
+	c.JSON(http.StatusOK, gin.H{"statusCode:": http.StatusOK, "message": "Successfully retrieved booking.", "result": booking})
 }

@@ -8,17 +8,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type BookingRepository struct {
+type Repository struct {
 	DB *sqlx.DB
 }
 
-func NewBookingRepository(db *sqlx.DB) *BookingRepository {
-	return &BookingRepository{
+func NewRepository(db *sqlx.DB) *Repository {
+	return &Repository{
 		DB: db,
 	}
 }
 
-func (r *BookingRepository) Create(userId uuid.UUID, req CreateBookingRequest) error {
+func (r *Repository) Create(userId uuid.UUID, req CreateRequest) error {
 	query := `INSERT INTO bookings(user_id, start_date, end_date, status) VALUES (:userId, :startDate, :endDate, :status)`
 
 	// create fields required for DB insert
@@ -40,7 +40,7 @@ func (r *BookingRepository) Create(userId uuid.UUID, req CreateBookingRequest) e
 	return nil
 }
 
-func (r *BookingRepository) GetById(userId uuid.UUID, id uuid.UUID) (*models.Booking, error) {
+func (r *Repository) GetById(userId uuid.UUID, id uuid.UUID) (*models.Booking, error) {
 	// One to Many example
 	query := `
 	SELECT 

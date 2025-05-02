@@ -18,28 +18,28 @@ func SetupRouter() *gin.Engine {
 	// -- USER --
 
 	// --- User Setup ---
-	userRepo := user.NewUserRepository(DB)
-	userService := user.NewUserService(userRepo)
-	userHandler := user.NewUserHandler(userService)
+	userRepo := user.NewRepository(DB)
+	userService := user.NewService(userRepo)
+	userHandler := user.NewHandler(userService)
 
 	// --- User Routes ---
 	userRoutes := api.Group("/user")
-	userRoutes.GET("/:id", userHandler.GetUserByIdHandler)
-	userRoutes.GET("/", userHandler.GetAllUsersHandler)
-	userRoutes.POST("/signup", userHandler.CreateUserHandler)
-	userRoutes.POST("/signin", userHandler.LoginUserHandler)
+	userRoutes.GET("/:id", userHandler.GetById)
+	userRoutes.GET("/", userHandler.GetAll)
+	userRoutes.POST("/signup", userHandler.Create)
+	userRoutes.POST("/signin", userHandler.Login)
 
 	// -- BOOKING --
 
 	// --- Booking Setup ---
-	bookingRepo := booking.NewBookingRepository(DB)
-	bookingService := booking.NewBookingService(bookingRepo)
-	bookingHandler := booking.NewBookingHandler(bookingService)
+	bookingRepo := booking.NewRepository(DB)
+	bookingService := booking.NewService(bookingRepo)
+	bookingHandler := booking.NewHandler(bookingService)
 
 	// ---  Booking Routes ---
 	bookingRoutes := api.Group("/booking")
-	bookingRoutes.POST("/:user_id", bookingHandler.CreateBookingHandler)
-	bookingRoutes.GET("/:id", bookingHandler.GetBookingByIdHandler)
+	bookingRoutes.POST("/:user_id", bookingHandler.Create)
+	bookingRoutes.GET("/:id", bookingHandler.GetById)
 
 	return router
 }
